@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">instagram</string>
+    <string name="login">ورود</string>
+    <string name="email">ایمیل</string>
+    <string name="full_name">نام کامل</string>
+    <string name="password">کلمه عبور</string>
+    <string name="password_repeat">تکرار کلمه‌ی عبور</string>
+    <string name="forgot_password">رمز عبور خود را فراموش کرده‌اید؟</string>
+    <string name="already_a_member">آیا عضو هستید؟ وارد شوید.</string>
+    <string name="description">توضیحات</string>
+    <string name="signup">ثبت نام</string>
+    <string name="share">به اشتراک گذاری</string>
+    <string name="cancel">انصراف</string>
+    <string name="follow">فالو</string>
+    <string name="unfollow">آنفالو</string>
+    <string name="failed">مشکلی به وجود آمد</string>
+    <string name="choose_image">انتخاب عکس از:</string>
+    <array name="sources">
+        <item>گالری</item>
+        <item>دوربین</item>
+    </array>
+</resources>
