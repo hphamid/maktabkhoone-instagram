@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.bumptech.glide.Glide;
+
 import ir.hphamid.instagram.R;
 import ir.hphamid.instagram.fragments.ImageListFragment;
 
@@ -39,4 +41,6 @@ public class HomeActivity extends AppCompatActivity{
             }
         });
     }
+
+
 }

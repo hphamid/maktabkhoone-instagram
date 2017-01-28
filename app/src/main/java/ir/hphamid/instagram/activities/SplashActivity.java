@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import ir.hphamid.instagram.LoginHelper;
+
 /**
  * Created on 1/26/17 at 1:47 AM.
  * Project: instagram
@@ -21,7 +23,6 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         String userName = getUserName();
         if (userName != null) {
-            Toast.makeText(this, "Welcome " + userName, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
         } else {
@@ -33,8 +34,7 @@ public class SplashActivity extends Activity {
 
 
     private String getUserName() {
-        SharedPreferences sharedPreferences = getSharedPreferences(LoginActivity.PrefName, Context.MODE_PRIVATE);
-        return sharedPreferences.getString(LoginActivity.UserName_key, null);
+        return LoginHelper.getEmail(this);
     }
 }
 

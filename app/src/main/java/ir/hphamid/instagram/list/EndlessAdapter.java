@@ -21,7 +21,7 @@ public abstract class EndlessAdapter<VH extends RecyclerView.ViewHolder> extends
     public abstract void onDataBindViewHolder(VH holder, int position);
     protected abstract int getLoadingViewType();
     protected abstract void loadMore(int position , LoadMoreCallback callback);
-
+    protected void onDataReset(){}
     public int getDataItemViewType(int position){
         return 0;
     }
@@ -93,14 +93,21 @@ public abstract class EndlessAdapter<VH extends RecyclerView.ViewHolder> extends
         if(!isLoading()){
             return;
         }
-        loading = false;
-        notifyItemRemoved(position + 1);
-        count++;
         if(count <= 0){
             done = true;
             count--;
         }
+        count++;
+        notifyItemRemoved(position + 1);
         notifyItemRangeInserted(position, count);
+        loading = false;
+    }
+
+    public void reset(){
+        loading = false;
+        done = false;
+        onDataReset();
+        notifyDataSetChanged();
     }
 
     /**

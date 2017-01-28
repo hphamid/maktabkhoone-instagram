@@ -1,5 +1,7 @@
 package ir.hphamid.instagram.fragments;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,16 +14,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ir.hphamid.instagram.HttpAddresses;
+import ir.hphamid.instagram.HttpHelper;
+import ir.hphamid.instagram.LoginHelper;
 import ir.hphamid.instagram.R;
+import ir.hphamid.instagram.activities.HomeActivity;
+import ir.hphamid.instagram.activities.LoginActivity;
+import ir.hphamid.instagram.activities.SignUpActivity;
 import ir.hphamid.instagram.data.SharedImage;
 import ir.hphamid.instagram.data.User;
 import ir.hphamid.instagram.list.EndlessAdapter;
+import ir.hphamid.instagram.reqAndres.ImageListResponse;
+import ir.hphamid.instagram.reqAndres.LoginResponse;
+import ir.hphamid.instagram.reqAndres.PaginationRequest;
+import ir.hphamid.instagram.reqAndres.SignupRequest;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created on 1/24/17 at 2:48 PM.
@@ -96,46 +116,6 @@ public class ImageListFragment extends Fragment {
 
     }
 
-    class SimpleImageListAdapter extends RecyclerView.Adapter<ImageItemViewHolder> {
-        List<SharedImage> items;
-
-        public SimpleImageListAdapter() {
-            items = new ArrayList<>();
-            User user = new User();
-            user.setFullName("Hamid Pourrabi");
-            for (int i = 0; i < 500; i++) {
-                SharedImage toAdd = new SharedImage();
-                toAdd.setImageUri("file:///android_asset/" + getImageName(i));
-                toAdd.setDescription("item no " + i);
-                toAdd.setUser(user);
-                items.add(toAdd);
-            }
-        }
-
-
-        private String getImageName(int i) {
-            return "a" + (i % 30 + 1) + ".jpg";
-        }
-
-        @Override
-        public ImageItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.view_item_image, parent, false);
-            return new ImageItemViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(ImageItemViewHolder holder, int position) {
-            holder.setContent(items.get(position));
-        }
-
-        @Override
-        public int getItemCount() {
-            return items.size();
-        }
-    }
-
     class EndlessImageListAdapter extends EndlessAdapter<ImageItemViewHolder>{
         List<SharedImage> items = new ArrayList<>();
 
@@ -161,28 +141,75 @@ public class ImageListFragment extends Fragment {
         }
 
         @Override
-        protected void loadMore(int position, LoadMoreCallback callback) {
-            Log.d("loadmore", position + "");
-            User user = new User();
-            user.setFullName("Hamid Pourrabi");
-            for (int i = 0; i < 10; i++) {
-                SharedImage toAdd = new SharedImage();
-                toAdd.setImageUri("file:///android_asset/" + getImageName(i));
-                toAdd.setDescription("item no " + (position + i + 1));
-                toAdd.setUser(user);
-                items.add(toAdd);
-            }
-            callback.done(10);
+        protected void onDataReset() {
+            items.clear();
         }
 
-        private String getImageName(int i) {
-            return "a" + (i % 30 + 1) + ".jpg";
+        @Override
+        protected void loadMore(int position, final LoadMoreCallback callback) {
+            PaginationRequest requestJson = new PaginationRequest();
+            requestJson.setLimit(20);
+            requestJson.setSkip(position);
+            RequestBody body = RequestBody.create(HttpHelper.JSON, new Gson().toJson(requestJson));
+            Request request = new Request.Builder()
+                    .addHeader("Authorization", HttpHelper.getInstance().getLoginHeader(getContext()))
+                    .post(body)
+                    .url(HttpAddresses.AllImages).build();
+            HttpHelper.getInstance().getClient().newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getContext(), "Unknown Problem", Toast.LENGTH_SHORT).show();
+                            callback.done(0);
+                        }
+                    });
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String responseString = response.body().string();
+                    Log.e("responce", responseString);
+                    ImageListResponse res = new Gson().fromJson(responseString, ImageListResponse.class);
+                    if(res.isSuccess()){
+                        if(res.getImages() != null){
+                            for(SharedImage image: res.getImages()){
+                                items.add(image);
+                            }
+                            callback.done(res.getImages().size());
+                        }else{
+                            callback.done(0);
+                        }
+                    }else if(res.getCode() == 401){
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getContext(), "Login Required", Toast.LENGTH_LONG).show();
+                                Intent loginActivityIntent = new Intent(getActivity(), LoginActivity.class);
+                                getActivity().finish();
+                                getActivity().startActivity(loginActivityIntent);
+                            }
+                        });
+                        callback.done(0);
+                    }else{
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getContext(), "Unknown Problem", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        callback.done(0);
+                    }
+                }
+            });
+
         }
     }
 
     public RecyclerView.LayoutManager layoutManager;
     public RecyclerView recyclerView;
-    public RecyclerView.Adapter adapter;
+    public EndlessImageListAdapter adapter;
 
     @Nullable
     @Override
@@ -194,5 +221,11 @@ public class ImageListFragment extends Fragment {
         adapter = new EndlessImageListAdapter();
         this.recyclerView.setAdapter(adapter);
         return toReturn;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        adapter.reset();
     }
 }

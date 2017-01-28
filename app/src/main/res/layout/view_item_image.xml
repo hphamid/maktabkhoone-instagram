@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:src="@drawable/image_place_holder"
+                android:scaleType="centerCrop"
                 />
             <TextView
                 android:id="@+id/image_view_item_description"

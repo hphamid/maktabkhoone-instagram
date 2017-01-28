@@ -24,7 +24,7 @@
 
 
             <EditText
-
+                android:id="@+id/share_description"
                 style="@style/Base.Widget.AppCompat.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
