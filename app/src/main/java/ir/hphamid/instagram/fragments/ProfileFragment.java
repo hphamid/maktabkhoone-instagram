@@ -193,7 +193,7 @@ public class ProfileFragment extends Fragment {
                 public void onResponse(Call call, Response response) throws IOException {
                     String responseString = response.body().string();
                     ImageListResponse res = new Gson().fromJson(responseString, ImageListResponse.class);
-                    if(res.isSuccess()){
+                    if(response.isSuccessful() && res.isSuccess()){
                         if(res.getImages() != null){
                             for(SharedImage image: res.getImages()){
                                 items.add(image);
@@ -202,7 +202,7 @@ public class ProfileFragment extends Fragment {
                         }else{
                             callback.done(0);
                         }
-                    }else if(res.getCode() == 401){
+                    }else if(response.code() == 401 || res.getCode() == 401){
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
