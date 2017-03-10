@@ -2,7 +2,9 @@
 #کد پیاده سازی شده در کلاس اندروید مکتب خونه
 
 ## شاخه‌ها
+<div dir="rtl">
 در این پروژه دو برنچ وجود دارد.
+</div>
 * master
 * offline
 
@@ -24,3 +26,9 @@ public class HttpAddresses {
     public final static String StorageId = "<<your storage id>>";
 }
 ```
+
+## لینک‌ها
+
+* [درس بر روی مکتب خونه](https://plus.maktabkhooneh.org/course/2/chapters/#info)
+* [سرور پروژه برای بکتوری](https://github.com/hphamid/maktabkhooneh-instagram-server)
+
